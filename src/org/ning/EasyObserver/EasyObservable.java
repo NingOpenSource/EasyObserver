@@ -7,7 +7,7 @@ package org.ning.EasyObserver;
  *
  * @param <T>
  */
-public abstract class EasyObserver<T> extends Observable<T>{
+public abstract class EasyObservable<T> extends Observable<T>{
 	/**
 	 * 
 	 * @return 被觀察的值
