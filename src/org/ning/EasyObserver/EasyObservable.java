@@ -94,7 +94,7 @@ public abstract class EasyObservable<T> {
 			clearChanged();
 		}
 		for (EasyObserver<T> observer : ts) {
-			observer.onUpdate(this, t);
+			observer.onUpdate(this);
 		}
 	}
 
