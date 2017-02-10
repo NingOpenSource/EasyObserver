@@ -34,7 +34,7 @@ public abstract class EasyObservable<T> {
 
 
 	private boolean changed = false;
-	private final Map<String, EasyObserver<T>> obs = new HashMap<>();
+	private final Map<String, EasyObserver<T>> obs = new HashMap<String, EasyObserver<T>>();
 
 	/**
 	 * 
