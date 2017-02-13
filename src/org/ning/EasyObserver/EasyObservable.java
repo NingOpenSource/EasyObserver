@@ -16,22 +16,28 @@ public abstract class EasyObservable<T> {
 	 * @return 被觀察的值
 	 */
 	public abstract T getObject();
+
 	/**
 	 * 
-	 * @param t 即將輸入的值
+	 * @param t
+	 *            即將輸入的值
 	 */
 	protected abstract void onUpdate(T t);
+
 	/**
 	 * 
-	 * @param t 即將輸入的值
+	 * @param t
+	 *            即將輸入的值
 	 */
-	public final void update(T t){
-		onUpdate(t);
+	public final void update(T t) {
+		/**
+		 * 防止相等对象被回收
+		 */
+		if (getObject() != t)
+			onUpdate(t);
 		setChanged();
 		notifyObservers(t);
 	}
-	
-
 
 	private boolean changed = false;
 	private final Map<String, EasyObserver<T>> obs = new HashMap<String, EasyObserver<T>>();
@@ -141,5 +147,5 @@ public abstract class EasyObservable<T> {
 	public final synchronized int countObservers() {
 		return obs.size();
 	}
-	
+
 }
