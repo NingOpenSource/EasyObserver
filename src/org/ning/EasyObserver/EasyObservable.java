@@ -2,8 +2,9 @@ package org.ning.EasyObserver;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
+import org.ning.EasyObserver.core.EasyConvertor;
+import org.ning.EasyObserver.core.EasyConvertor.Convertor1;
 import org.ning.EasyObserver.core.EasyObserver;
 
 /**
@@ -27,6 +28,16 @@ public abstract class EasyObservable<T> {
 	protected abstract void onUpdate(T t);
 
 	/**
+	 * 更新过程被终止的 时候会调用
+	 * 
+	 * @param observable
+	 * @param convertor
+	 */
+	protected void onStopUpdate(EasyObservable<T> observable, Convertor1<Boolean, EasyObservable<T>> convertor) {
+
+	}
+
+	/**
 	 * 
 	 * @param t
 	 *            即將輸入的值
@@ -35,21 +46,43 @@ public abstract class EasyObservable<T> {
 		/**
 		 * 防止相等对象被回收
 		 */
-		if (getObject() != t)
+		if (getObject() != t) {
+			/**
+			 * b为false默认不会阻止更新操作
+			 */
+			boolean b = false;
+			for (Convertor1<Boolean, EasyObservable<T>> convertor : beforeUpdateConvertors.values()) {
+				boolean a = convertor.convert(this);
+				a = !a;
+				if (a)
+					onStopUpdate(this, convertor);
+				b |= a;
+			}
+			/**
+			 * b为false默认不会阻止更新操作
+			 */
+			if (b)
+				return;
 			onUpdate(t);
+		}
 		setChanged();
 		notifyObservers(t);
 	}
 
 	private boolean changed = false;
-	private final Map<String, EasyObserver<T>> obs = new HashMap<String, EasyObserver<T>>();
+	private final HashMap<Object, EasyObserver<T>> obs = new HashMap<Object, EasyObserver<T>>();
+	private final HashMap<Object, Convertor1<Boolean, EasyObservable<T>>> beforeUpdateConvertors = new HashMap<Object, EasyConvertor.Convertor1<Boolean, EasyObservable<T>>>();
+
+	public HashMap<Object, Convertor1<Boolean, EasyObservable<T>>> getBeforeUpdateConvertors() {
+		return beforeUpdateConvertors;
+	}
 
 	/**
 	 * 
 	 * @param key
 	 * @param o
 	 */
-	public final synchronized void registObserver(String key, EasyObserver<T> o) {
+	public final synchronized void registObserver(Object key, EasyObserver<T> o) {
 		if (o == null)
 			throw new NullPointerException();
 		if (!obs.containsKey(key)) {
@@ -102,7 +135,7 @@ public abstract class EasyObservable<T> {
 			clearChanged();
 		}
 		for (EasyObserver<T> observer : ts) {
-			observer.onUpdate(this);
+			observer.accept(this);
 		}
 	}
 

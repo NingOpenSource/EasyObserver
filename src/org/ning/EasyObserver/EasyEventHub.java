@@ -73,4 +73,8 @@ public class EasyEventHub {
 			events.get(object).start();
 		}
 	}
+	
+	public int getEventsCount(){
+		return events.size();
+	}
 }
