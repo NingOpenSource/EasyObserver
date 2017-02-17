@@ -138,7 +138,7 @@ public class MainDemo {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						EasyEventHub.getDefault().start("20+30");
+						EasyEventHub.getDefault().start("20+30");b 
 					};
 				}.start();
 
