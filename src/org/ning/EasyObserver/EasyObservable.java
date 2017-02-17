@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.ning.EasyObserver.core.EasyObserver;
+
 /**
  * 
  * @author yanni
