@@ -11,6 +11,29 @@ import org.ning.EasyObserver.core.EasyConvertor.Convertor;
  *
  */
 public abstract class EasyEvent {
+
+	private Object tag;
+	/**
+	 * 描述
+	 */
+	private String description;
+	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Object getTag() {
+		return tag;
+	}
+
+	public void setTag(Object tag) {
+		this.tag = tag;
+	}
+
 	/**
 	 * 在运行之前的监听
 	 */
@@ -26,25 +49,30 @@ public abstract class EasyEvent {
 	public final LinkedHashMap<Object, Convertor<Boolean>> getOnBeforeRunningConvertors() {
 		return onBeforeRunningConvertors;
 	}
-	
+	/**
+	 * 开始执行事件
+	 */
 	public final void start(){
 		for(Convertor<Boolean> convertor:onBeforeRunningConvertors.values()){
 			if(!convertor.convert()){
-				onStopRunning(convertor);
+				onStopRunning(this,convertor);
 				return;
 			}
 		}
-		onRunning();
+		onRunning(this);
 		for(Acceptor acceptor:onAfterRunningAcceptors.values()){
 			acceptor.accept();
 		}
 	}
 	
-	protected void onStopRunning(Convertor<Boolean> convertor){
+	protected void onStopRunning(EasyEvent easyEvent,Convertor<Boolean> convertor){
 		
 	}
-	
-	protected abstract void onRunning();
+	/**
+	 * 事件执行的主体
+	 * @param easyEvent
+	 */
+	protected abstract void onRunning(EasyEvent easyEvent);
 	
 	
 }
