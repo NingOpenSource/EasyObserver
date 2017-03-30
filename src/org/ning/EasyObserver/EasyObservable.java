@@ -3,6 +3,7 @@ package org.ning.EasyObserver;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.ning.EasyObserver.core.EasyAcceptor.Acceptor1;
 import org.ning.EasyObserver.core.EasyConvertor;
 import org.ning.EasyObserver.core.EasyConvertor.Convertor1;
 import org.ning.EasyObserver.core.EasyObserver;
@@ -41,32 +42,60 @@ public abstract class EasyObservable<T> {
 	 * 
 	 * @param t
 	 *            即將輸入的值
+	 * @return 为false默认不会阻止更新操作
 	 */
-	public final void update(T t) {
+	protected final boolean beforeUpdate(T t) {
+		/**
+		 * b为false默认不会阻止更新操作
+		 */
+		boolean b = false;
+		for (Convertor1<Boolean, EasyObservable<T>> convertor : beforeUpdateConvertors.values()) {
+			boolean a = convertor.convert(this);
+			a = !a;
+			if (a)
+				onStopUpdate(this, convertor);
+			b |= a;
+		}
+		return b;
+	}
+
+	/**
+	 * 主动的更新策略，可以自定义更新的内容来引起观察者的注意
+	 * 
+	 * @param onUpdateAcceptor
+	 *            执行更新操作
+	 */
+	public final void update(Acceptor1<T> onUpdateAcceptor) {
+		/**
+		 * beforeUpdate为false默认不会阻止更新操作
+		 */
+		if (beforeUpdate(getObject()))
+			return;
+		if (onUpdateAcceptor != null)
+			onUpdateAcceptor.accept(getObject());
+		setChanged();
+		notifyObservers();
+	}
+
+	/**
+	 * 
+	 * @param t
+	 *            即將輸入的值
+	 */
+	public final void update(final T t) {
+		/**
+		 * beforeUpdate为false默认不会阻止更新操作
+		 */
+		if (beforeUpdate(t))
+			return;
 		/**
 		 * 防止相等对象被回收
 		 */
 		if (getObject() != t) {
-			/**
-			 * b为false默认不会阻止更新操作
-			 */
-			boolean b = false;
-			for (Convertor1<Boolean, EasyObservable<T>> convertor : beforeUpdateConvertors.values()) {
-				boolean a = convertor.convert(this);
-				a = !a;
-				if (a)
-					onStopUpdate(this, convertor);
-				b |= a;
-			}
-			/**
-			 * b为false默认不会阻止更新操作
-			 */
-			if (b)
-				return;
 			onUpdate(t);
 		}
 		setChanged();
-		notifyObservers(t);
+		notifyObservers();
 	}
 
 	private boolean changed = false;
@@ -107,11 +136,8 @@ public abstract class EasyObservable<T> {
 		obs.clear();
 	}
 
-	public void notifyObservers() {
-		notifyObservers(null);
-	}
 
-	public void notifyObservers(T t) {
+	protected final void notifyObservers() {
 		/*
 		 * a temporary array buffer, used as a snapshot of the state of current
 		 * Observers.
